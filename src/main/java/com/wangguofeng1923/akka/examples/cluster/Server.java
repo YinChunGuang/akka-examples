@@ -15,6 +15,10 @@ public static void main(String[] args) {
 			+ "akka {"
 			+ "\r\n	  actor {"
 			+ "\r\n	    provider = \"akka.cluster.ClusterActorRefProvider\""
+			+ "\r\n	    default-dispatcher {"
+			+ "\r\n	      # Throughput for default Dispatcher, set to 1 for as fair as possible"
+			+ "\r\n	      throughput = 10"
+			+ "\r\n	    }"
 			+ "\r\n	  }"
 			+ "\r\n	   remote {"
 			+ "\r\n	    enabled-transports = [\"akka.remote.netty.tcp\"]"
@@ -22,22 +26,28 @@ public static void main(String[] args) {
 + "\r\n"
 			+ "\r\n	  remote {"
 			+ "\r\n	    log-remote-lifecycle-events = off"
+			+ "\r\n	    ##如果不进行覆盖，则加载当前配置的ClusterActor会在端口(port=2551)上提供服务"
 			+ "\r\n	    netty.tcp {"
 			+ "\r\n	      hostname = \"127.0.0.1\""
 			+ "\r\n	      port = 2551"
 			+ "\r\n	    }"
 			+ "\r\n	  }"
-			+ "\r\n	"
+			+ "\r\n	  ##seed节点，用来作为cluster的初始化和加入点"
+			+ "\r\n	  ###一开始能够预料的节点们被叫做种子节点（seed nodes），有节点加入的时候，会等种子节点的返回确认才算是加入成功。"
 			+ "\r\n	  cluster {"
 			+ "\r\n	    seed-nodes = ["
 			+ "\r\n	      \"akka.tcp://%s@127.0.0.1:2552\","
 			+ "\r\n	      \"akka.tcp://%s@127.0.0.1:2551\""
 			+ "\r\n	    ]"
-			+ "\r\n	    auto-down-unreachable-after = 10s"
+			+ "\r\n	    ##被失败检测出来不可达的节点，会被leader进行处理，也可以手动搞下来。"
+			+ "\r\n	    auto-down-unreachable-after = 10s  ###10秒不可达就自动关"
+			+ "\r\n	    ##也可以写代码 Cluster.get(system).down(address)"
+			+ "\r\n	    ##网络分裂时，这个自动down有可能会出现脑裂。"
 			+ "\r\n	  }"
 			+ "\r\n	  log-dead-letters = off"
 			+ "\r\n	  jvm-exit-on-fatal-error = on"
-			+ "\r\n	  loglevel = \"DEBUG\""
+			+ "\r\n	  loglevel = \"INFO\""
+			+ "\r\n	  #loggers = [\"akka.event.slf4j.Slf4jLogger\"]"
 			+ "\r\n	 "
 			+ "\r\n	}"
 			+ "\r\n	# Disable legacy metrics in akka-cluster."
@@ -65,17 +75,11 @@ public static void main(String[] args) {
         
         ActorRef clusterManagerActor = system.actorOf(Props.create(ClusterManagerActor.class), "clusterController");
         ActorRef nodeActor = system.actorOf(new BalancingPool(5).props(Props.create(NodeActor.class)), "nodeActor");
-        akka.actor.Extension extension=ClusterMetricsExtension.apply(system);
-
-
-        ClusterMetricsExtension clusterExtension=(ClusterMetricsExtension)extension;
-        clusterExtension.subscribe(clusterManagerActor);
-
-//        clusterExtension.registerService(nodeActor);
-
-        
-
-
+//        akka.actor.Extension extension=ClusterMetricsExtension.apply(system);
+//
+//
+//        ClusterMetricsExtension clusterExtension=(ClusterMetricsExtension)extension;
+//        clusterExtension.subscribe(clusterManagerActor);
 
         
 
