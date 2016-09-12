@@ -45,11 +45,11 @@ public class RemoteActor extends UntypedActor{
 		Config config=ConfigFactory.parseString(conf);
 		
 		ActorSystem system= ActorSystem.create("remote-demo", config);
-		 //不使用默认的配置，而是选择加载选定的remote actor配置
+		 //涓嶄娇鐢ㄩ粯璁ょ殑閰嶇疆锛岃�屾槸閫夋嫨鍔犺浇閫夊畾鐨剅emote actor閰嶇疆
 
 
-        //remote actor的ref
-        final ActorRef calculatorActor = system.actorOf(Props.create(RemoteActor.class), "RemoteActor");
+        //remote actor鐨剅ef
+        final ActorRef remoteActor = system.actorOf(Props.create(RemoteActor.class), "RemoteActor");
 
         System.out.println("Started RemoteActor");
 

@@ -21,7 +21,7 @@ public class HelloWorld {
 	
 	public static void main(String[] args) {
 		ActorSystem system=ActorSystem.create("helloworld-demo");
-		Inbox inbox=Inbox.create(system);
+//		Inbox inbox=Inbox.create(system);
 		
 		ActorRef helloWorldActor=system.actorOf(Props.create(HelloWorldActor.class));
 		helloWorldActor.tell("guofeng", ActorRef.noSender());
