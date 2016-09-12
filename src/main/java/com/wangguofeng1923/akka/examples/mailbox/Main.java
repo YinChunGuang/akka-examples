@@ -1,5 +1,6 @@
 package com.wangguofeng1923.akka.examples.mailbox;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import akka.actor.ActorRef;
@@ -9,8 +10,9 @@ import akka.pattern.CircuitBreaker;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import scala.compat.java8.FutureConverters;
+import scala.concurrent.Future;
 import scala.concurrent.duration.FiniteDuration;
-import scala.concurrent.impl.Future;
+
 
 public class Main {
 public static void main(String[] args) {
@@ -34,11 +36,11 @@ public static void main(String[] args) {
                     });
 
     Timeout timeout = Timeout.apply(2, TimeUnit.SECONDS);
-    breaker.call
-    Future future1 = breaker.callWithCircuitBreaker(()
+
+    Future<Object> future1 = breaker.callWithSyncCircuitBreaker(()
             -> Patterns.ask(pongActor, new PingActor.PingMessage("ping"), timeout));
 
-    Future future2 = breaker.callWithCircuitBreaker(()
+    Future<Object> future2 = breaker.callWithSyncCircuitBreaker(()
             -> Patterns.ask(pongActor, new PingActor.PingMessage("ping"), timeout));
 
 

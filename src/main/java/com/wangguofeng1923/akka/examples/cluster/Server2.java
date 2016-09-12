@@ -6,10 +6,9 @@ import com.typesafe.config.ConfigFactory;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
-import akka.cluster.metrics.ClusterMetricsExtension;
 import akka.routing.BalancingPool;
 
-public class Server {
+public class Server2 {
 public static void main(String[] args) {
 	String conf=""+/**~{*/""
 			+ "akka {"
@@ -24,7 +23,7 @@ public static void main(String[] args) {
 			+ "\r\n	    log-remote-lifecycle-events = off"
 			+ "\r\n	    netty.tcp {"
 			+ "\r\n	      hostname = \"127.0.0.1\""
-			+ "\r\n	      port = 2551"
+			+ "\r\n	      port = 0"
 			+ "\r\n	    }"
 			+ "\r\n	  }"
 			+ "\r\n	"
@@ -55,29 +54,24 @@ public static void main(String[] args) {
 		String clusterName="cluster";
 		String configStr=String.format(conf, clusterName, clusterName);
 		System.out.println(configStr);
-		Config config=	ConfigFactory.parseString(configStr);
-		ActorSystem system=ActorSystem.create(clusterName,config);
+		Config baseConfig=	ConfigFactory.parseString(configStr);
 		
-		
-	
-				
- 
-        
-        ActorRef clusterManagerActor = system.actorOf(Props.create(ClusterManagerActor.class), "clusterController");
-        ActorRef nodeActor = system.actorOf(new BalancingPool(5).props(Props.create(NodeActor.class)), "nodeActor");
-        akka.actor.Extension extension=ClusterMetricsExtension.apply(system);
+	String[]ports={ "2551", "2552", "0" };
+	  for (String port : ports) {
+	      // Override the configuration of the port
+	      Config config = ConfigFactory.parseString(
+	          "akka.remote.netty.tcp.port=" + port).withFallback(
+	        		  baseConfig);
 
+	      // Create an Akka system
+	      ActorSystem system = ActorSystem.create(clusterName, config);
 
-        ClusterMetricsExtension clusterExtension=(ClusterMetricsExtension)extension;
-        clusterExtension.subscribe(clusterManagerActor);
+	      // Create an actor that handles cluster domain events
+	      system.actorOf(Props.create(ClusterManagerActor.class),
+	          "clusterController");
+	      ActorRef nodeActor = system.actorOf(new BalancingPool(5).props(Props.create(NodeActor.class)), "nodeActor");
 
-//        clusterExtension.registerService(nodeActor);
-
-        
-
-
-
-        
-
+	    }
 	}
+
 }
